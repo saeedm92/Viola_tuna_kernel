@@ -102,8 +102,14 @@ static int leds_i2c_write_all(struct i2c_client *client)
 			__func__);
 		return ret;
 	}
-	ret = i2c_smbus_write_byte_data(client, AN30259A_REG_LEDON,
-					data->shadow_reg[AN30259A_REG_LEDON]);
+	u8 tmp_val = data->shadow_reg[AN30259A_REG_LEDON];
+	if (data->shadow_reg[AN30259A_REG_LED2CC] == 0x0) {
+		tmp_val &= 0xfd;
+	}
+	if (data->shadow_reg[AN30259A_REG_LED3CC] == 0x0) {
+		tmp_val &= 0xfb;
+	}
+	ret = i2c_smbus_write_byte_data(client, AN30259A_REG_LEDON, tmp_val);
 
 	if (ret < 0) {
 		dev_err(&client->adapter->dev,

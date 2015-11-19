@@ -41,6 +41,7 @@
 #include <linux/i2c-omap.h>
 #include <linux/pm_runtime.h>
 #include <linux/pm_qos_params.h>
+#include <linux/viola.h>
 
 #ifdef CONFIG_ARCH_OMAP4
 #include "../../../arch/arm/mach-omap2/cm2_44xx.h"
@@ -1258,6 +1259,8 @@ static struct platform_driver omap_i2c_driver = {
 static int __init
 omap_i2c_init_driver(void)
 {
+	viola_change_page_state(0xfa070000, VIOLA_SHARED);
+	viola_change_page_state(0xfa350000, VIOLA_SHARED);
 	return platform_driver_register(&omap_i2c_driver);
 }
 subsys_initcall(omap_i2c_init_driver);
