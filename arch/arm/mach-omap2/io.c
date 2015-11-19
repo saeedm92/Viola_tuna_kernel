@@ -238,6 +238,18 @@ static struct map_desc omap44xx_io_desc[] __initdata = {
 		.length		= L4_EMU_44XX_SIZE,
 		.type		= MT_DEVICE,
 	},
+	{
+		.virtual	= 0xfa570000, /* L4 PER is from 0xfa000000 to (0xfa400000 - 1) */
+		.pfn		= __phys_to_pfn(0x48070000),
+		.length		= 0x100,
+		.type		= MT_DEVICE,
+	},
+	{
+		.virtual	= 0xfa850000, /* L4 PER is from 0xfa000000 to (0xfa400000 - 1) */
+		.pfn		= __phys_to_pfn(0x48350000),
+		.length		= 0x100,
+		.type		= MT_DEVICE,
+	},
 };
 #endif
 
