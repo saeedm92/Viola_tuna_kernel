@@ -33,6 +33,13 @@
 #include <linux/mfd/core.h>
 #include <linux/mfd/twl6040-codec.h>
 
+#define VIOLA_MEASURE	1
+
+#ifdef VIOLA_MEASURE
+static unsigned long long total_sample_time[4];
+static int num_samples[4];
+#endif /* VIOLA_MEASURE */
+
 int twl6040_reg_read(struct twl6040 *twl6040, unsigned int reg)
 {
 	int ret;
@@ -45,7 +52,6 @@ int twl6040_reg_read(struct twl6040 *twl6040, unsigned int reg)
 		return ret;
 	}
 	mutex_unlock(&twl6040->io_mutex);
-
 	return val;
 }
 EXPORT_SYMBOL(twl6040_reg_read);
@@ -53,9 +59,23 @@ EXPORT_SYMBOL(twl6040_reg_read);
 int twl6040_reg_write(struct twl6040 *twl6040, unsigned int reg, u8 val)
 {
 	int ret;
+#ifdef VIOLA_MEASURE
+	static ktime_t start_sample_time;
+	static ktime_t end_sample_time;
+	int cpu = 0; //smp_processor_id();
+#endif /* VIOLA_MEASURE */
 
 	mutex_lock(&twl6040->io_mutex);
+#ifdef VIOLA_MEASURE
+	start_sample_time = ktime_get();
+#endif /* VIOLA_MEASURE */
 	ret = twl_i2c_write_u8(TWL_MODULE_AUDIO_VOICE, val, reg);
+#ifdef VIOLA_MEASURE
+	end_sample_time = ktime_get();
+	total_sample_time[cpu] += (unsigned long long)
+			ktime_to_ns(ktime_sub(end_sample_time, start_sample_time));
+	num_samples[cpu]++;
+#endif /* VIOLA_MEASURE */
 	mutex_unlock(&twl6040->io_mutex);
 
 	return ret;
@@ -791,6 +811,30 @@ static int __devexit twl6040_remove(struct platform_device *pdev)
 
 	return 0;
 }
+
+#ifdef VIOLA_MEASURE
+void msm_camera_log_result_show(void)
+{
+	int _num_samples = 0;
+	unsigned long long _total_sample_time = 0;
+	int i;
+
+	for (i = 0; i < 4; i++) {
+		_num_samples += num_samples[i];
+		_total_sample_time += total_sample_time[i];
+	}
+
+	PRINTKM0("total sample time = %llu (ns)\n", _total_sample_time);
+	PRINTKM0("num samples = %d\n", _num_samples);
+	
+	for (i = 0; i < 4; i++) {
+		num_samples[i] = 0;
+		total_sample_time[i] = 0;
+	}
+
+}
+EXPORT_SYMBOL(msm_camera_log_result_show);
+#endif /* VIOLA_MEASURE */
 
 static struct platform_driver twl6040_driver = {
 	.probe		= twl6040_probe,

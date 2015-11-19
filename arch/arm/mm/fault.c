@@ -25,6 +25,7 @@
 #include <asm/tlbflush.h>
 
 #include "fault.h"
+#include <linux/viola.h>
 
 /*
  * Fault status register encodings.  We steal bit 31 for our own purposes.
@@ -134,6 +135,7 @@ void show_pte(struct mm_struct *mm, unsigned long addr)
 { }
 #endif					/* CONFIG_MMU */
 
+
 /*
  * Oops.  The kernel tried to access some page that wasn't present.
  */
@@ -141,6 +143,8 @@ static void
 __do_kernel_fault(struct mm_struct *mm, unsigned long addr, unsigned int fsr,
 		  struct pt_regs *regs)
 {
+	if (!viola_kernel_fault(mm, addr, fsr, regs))
+		return;
 	/*
 	 * Are we prepared to handle this kernel fault?
 	 */

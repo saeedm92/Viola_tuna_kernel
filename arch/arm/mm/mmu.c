@@ -30,6 +30,7 @@
 #include <asm/mach/map.h>
 
 #include "mm.h"
+#include <linux/viola.h>
 
 /*
  * empty_zero_page is a special page that is used for
@@ -730,9 +731,24 @@ static void __init create_mapping(struct map_desc *md)
 void __init iotable_init(struct map_desc *io_desc, int nr)
 {
 	int i;
+	struct map_desc *md, md2;
+	int j;
 
-	for (i = 0; i < nr; i++)
+	for (i = 0; i < nr; i++) {
+		md = io_desc + i;
+		if (md->pfn == 0x48000) {
+			md2.virtual = md->virtual;
+			md2.pfn = md->pfn;
+			md2.length = 0x1000;
+			md2.type = MT_DEVICE;
+			for (j = 0; j < 0x400; j++) {
+				create_mapping(&md2);
+				md2.virtual += 0x1000;
+				md2.pfn++;
+			}
+		} else
 		create_mapping(io_desc + i);
+	}
 }
 
 static void * __initdata vmalloc_min = (void *)(VMALLOC_END - SZ_128M);
