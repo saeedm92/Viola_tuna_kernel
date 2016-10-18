@@ -42,7 +42,6 @@
 #include <linux/pm_runtime.h>
 #include <linux/pm_qos_params.h>
 #include <linux/viola.h>
-#include <linux/prints.h>
 
 #ifdef CONFIG_ARCH_OMAP4
 #include "../../../arch/arm/mach-omap2/cm2_44xx.h"

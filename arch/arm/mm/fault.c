@@ -135,7 +135,6 @@ void show_pte(struct mm_struct *mm, unsigned long addr)
 { }
 #endif					/* CONFIG_MMU */
 
-
 /*
  * Oops.  The kernel tried to access some page that wasn't present.
  */
